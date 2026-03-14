@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sleep Test - คลินิกนอนกรน รพ.ศรีสังวรสุโขทัย</title>
+  <title>Sleep Test - คลินิกนอนกรน รพ.ศรีสังวรสุโขทัย (Premium Edition)</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -11,13 +11,13 @@
   <!-- Google Fonts: Sarabun -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
-  <!-- Babel (For JSX compilation in browser) -->
+  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <!-- Firebase v11 Setup -->
@@ -26,7 +26,6 @@
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
-    // แนบ Firebase เข้ากับ window เพื่อให้ React เรียกใช้ได้
     window.FirebaseHelpers = {
       initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
       getFirestore, collection, addDoc, onSnapshot, query
@@ -34,17 +33,30 @@
   </script>
 
   <style>
-    body { font-family: 'Sarabun', sans-serif; }
+    body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+    /* Premium Input Styling */
+    .premium-input {
+      width: 100%; border: 1px solid #e2e8f0; background-color: #f8fafc; border-radius: 0.75rem; 
+      padding: 0.75rem 1rem; color: #0f172a; transition: all 0.3s ease; outline: none;
+    }
+    .premium-input:focus {
+      background-color: #ffffff; border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+    }
+    /* Custom Scrollbar for Chat */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="bg-slate-50">
+<body class="text-slate-800 antialiased selection:bg-amber-500 selection:text-white">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
     // ==========================================
-    // 0. Icon Components (แทนที่ lucide-react เพื่อให้เป็น Standalone)
+    // 0. Icon Components
     // ==========================================
     const Icon = ({ name, size = 24, className = "" }) => {
       const icons = {
@@ -58,7 +70,9 @@
         Send: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>',
         Download: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
         BarChart2: '<path d="M18 20V10M12 20V4M6 20v-6"/>',
-        Printer: '<path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>'
+        Printer: '<path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>',
+        ChevronRight: '<path d="M9 18l6-6-6-6"/>',
+        CheckCircle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
       };
       return (
         <svg width={size} height={size} className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: icons[name] }} />
@@ -71,7 +85,6 @@
     let db = null, auth = null, appId = 'sleep-test-app';
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzmbD85hEUGx-uoCJHukG6bhurqea6vlTOYjZk379aiscadAjGVbtRzNy3GBwXLWNtS/exec"; 
     
-    // Delay initialization until window.FirebaseHelpers is ready
     const initFirebase = () => {
       if (!window.FirebaseHelpers) {
         setTimeout(initFirebase, 100);
@@ -258,32 +271,36 @@
       }, []);
 
       return (
-        <div className="min-h-screen font-sans text-slate-800">
-          <nav className="bg-blue-800 text-white shadow-md p-4 flex justify-between items-center">
+        <div className="min-h-screen font-sans text-slate-800 selection:bg-amber-500 selection:text-white">
+          {/* Sleek Deep Navy Navigation Bar */}
+          <nav className="bg-[#0f172a] text-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] border-b border-amber-500/20 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-40 backdrop-blur-md bg-[#0f172a]/95">
             <div className="flex items-center gap-3">
-              <img src="1586939599751.jpg" alt="โลโก้ รพ.ศรีสังวรสุโขทัย" className="h-10 w-10 bg-white rounded-full object-contain p-1" onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/50/ffffff/000000?text=Logo"; }} />
+              <div className="relative">
+                <div className="absolute inset-0 bg-amber-400 blur-[10px] opacity-20 rounded-full"></div>
+                <img src="1586939599751.jpg" alt="โลโก้ รพ.ศรีสังวรสุโขทัย" className="relative h-11 w-11 bg-white rounded-full object-contain p-0.5 border-2 border-amber-500/50" onError={(e) => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/50/ffffff/000000?text=Logo"; }} />
+              </div>
               <div>
-                <h1 className="text-xl font-bold hidden sm:block">ห้องตรวจหูคอจมูก รพ.ศรีสังวรสุโขทัย</h1>
-                <h1 className="text-lg font-bold sm:hidden">ENT Clinic</h1>
+                <h1 className="text-xl font-bold hidden sm:block tracking-tight text-white">ห้องตรวจหูคอจมูก <span className="text-amber-400 font-normal">รพ.ศรีสังวรสุโขทัย</span></h1>
+                <h1 className="text-lg font-bold sm:hidden tracking-tight text-white">ENT Clinic <span className="text-amber-400">SSW</span></h1>
               </div>
             </div>
-            <div className="flex gap-4">
-              <button onClick={() => setCurrentView('form')} className={`hover:text-blue-200 transition ${currentView === 'form' ? 'underline underline-offset-4' : ''}`}>
-                ฟอร์มส่งตรวจ
+            <div className="flex gap-4 md:gap-6 text-sm font-medium">
+              <button onClick={() => setCurrentView('form')} className={`flex items-center gap-2 hover:text-amber-400 transition-colors ${currentView === 'form' ? 'text-amber-400' : 'text-slate-300'}`}>
+                <Icon name="FileText" size={18} /> <span className="hidden md:inline">ส่งตรวจการนอนหลับ</span>
               </button>
               {currentView === 'dashboard' ? (
-                 <button onClick={() => setCurrentView('form')} className="flex items-center gap-1 hover:text-red-300">
-                   <Icon name="LogOut" size={16} /> ออกจากระบบ
+                 <button onClick={() => setCurrentView('form')} className="flex items-center gap-1 text-slate-300 hover:text-red-400 transition-colors">
+                   <Icon name="LogOut" size={18} /> <span className="hidden md:inline">ออกจากระบบ</span>
                  </button>
               ) : (
-                <button onClick={() => setCurrentView('login')} className={`flex items-center gap-1 hover:text-blue-200 transition ${currentView === 'login' ? 'underline underline-offset-4' : ''}`}>
-                  <Icon name="LogIn" size={16} /> สำหรับเจ้าหน้าที่
+                <button onClick={() => setCurrentView('login')} className={`flex items-center gap-1 hover:text-amber-400 transition-colors ${currentView === 'login' ? 'text-amber-400' : 'text-slate-300'}`}>
+                  <Icon name="LogIn" size={18} /> <span className="hidden md:inline">สำหรับเจ้าหน้าที่</span>
                 </button>
               )}
             </div>
           </nav>
 
-          <main className="container mx-auto p-4 md:p-6 pb-24">
+          <main className="container mx-auto p-4 md:p-8 pb-24 max-w-5xl">
             {currentView === 'form' && <PatientForm user={user} formData={formData} setFormData={setFormData} />}
             {currentView === 'login' && <AdminLogin onLogin={() => setCurrentView('dashboard')} />}
             {currentView === 'dashboard' && <AdminDashboard user={user} />}
@@ -295,7 +312,7 @@
     }
 
     // ==========================================
-    // Patient Form Component
+    // Patient Form Component (Premium Layout)
     // ==========================================
     function PatientForm({ user, formData, setFormData }) {
       const [isSubmitting, setIsSubmitting] = useState(false);
@@ -367,37 +384,59 @@
         const isHighRiskSB = stopBangTotal >= 3;
         const isHighRiskEp = epworthTotal > 10;
         return (
-          <div className="max-w-5xl mx-auto space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm text-center border-t-4 border-green-500">
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><Icon name="Activity" size={32} /></div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">ส่งข้อมูลสำเร็จ</h2>
-              <p className="text-slate-600">ข้อมูลของคุณถูกส่งไปยังคลินิกเรียบร้อยแล้ว ด้านล่างคือผลการประเมินเบื้องต้นของคุณ</p>
+          <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+            {/* Success Hero Card */}
+            <div className="bg-white p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100"><Icon name="CheckCircle" size={40} /></div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">ส่งข้อมูลสำเร็จเรียบร้อย</h2>
+              <p className="text-slate-500 max-w-lg mx-auto text-lg">ข้อมูลสุขภาพของคุณถูกบันทึกเข้าระบบของคลินิกแล้ว ด้านล่างนี้คือผลการประเมินเบื้องต้นของคุณ</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
-                <h3 className="text-xl font-bold text-slate-800 border-b pb-3 mb-4">สรุปผลประเมินความเสี่ยง</h3>
-                <div className="space-y-4 flex-1">
-                  <div className={`p-5 rounded-lg border ${isHighRiskSB ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                    <p className="text-sm font-semibold text-slate-600 mb-2">คะแนน STOP-BANG</p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Summary Panel */}
+              <div className="bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 opacity-50"></div>
+                
+                <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                  <div className="w-1.5 h-6 bg-amber-500 rounded-full"></div> 
+                  สรุปผลการประเมิน
+                </h3>
+                
+                <div className="space-y-5 flex-1 z-10">
+                  <div className={`p-6 rounded-2xl border ${isHighRiskSB ? 'bg-red-50/50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+                    <p className="text-sm font-semibold text-slate-500 mb-2 tracking-wide uppercase">คะแนน STOP-BANG</p>
                     <div className="flex justify-between items-end">
-                      <span className={`text-4xl font-bold ${isHighRiskSB ? 'text-red-600' : 'text-green-600'}`}>{stopBangTotal} <span className="text-lg text-slate-500 font-normal">/ 8</span></span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${isHighRiskSB ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>{isHighRiskSB ? 'เสี่ยงสูง' : 'เสี่ยงต่ำ'}</span>
+                      <span className={`text-5xl font-bold tracking-tighter ${isHighRiskSB ? 'text-red-600' : 'text-slate-800'}`}>{stopBangTotal} <span className="text-2xl text-slate-400 font-medium">/ 8</span></span>
+                      <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${isHighRiskSB ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>{isHighRiskSB ? 'ความเสี่ยงสูง' : 'ความเสี่ยงต่ำ'}</span>
                     </div>
                   </div>
-                  <div className={`p-5 rounded-lg border ${isHighRiskEp ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'}`}>
-                    <p className="text-sm font-semibold text-slate-600 mb-2">คะแนน Epworth</p>
+
+                  <div className={`p-6 rounded-2xl border ${isHighRiskEp ? 'bg-orange-50/50 border-orange-100' : 'bg-slate-50 border-slate-100'}`}>
+                    <p className="text-sm font-semibold text-slate-500 mb-2 tracking-wide uppercase">คะแนน Epworth</p>
                     <div className="flex justify-between items-end">
-                      <span className={`text-4xl font-bold ${isHighRiskEp ? 'text-orange-600' : 'text-green-600'}`}>{epworthTotal} <span className="text-lg text-slate-500 font-normal">/ 24</span></span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${isHighRiskEp ? 'bg-orange-200 text-orange-800' : 'bg-green-200 text-green-800'}`}>{isHighRiskEp ? 'ง่วงนอนผิดปกติ' : 'ปกติ'}</span>
+                      <span className={`text-5xl font-bold tracking-tighter ${isHighRiskEp ? 'text-orange-600' : 'text-slate-800'}`}>{epworthTotal} <span className="text-2xl text-slate-400 font-medium">/ 24</span></span>
+                      <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${isHighRiskEp ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>{isHighRiskEp ? 'ง่วงนอนผิดปกติ' : 'ปกติ'}</span>
                     </div>
                   </div>
                 </div>
-                <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-                  <button onClick={exportSummaryToPDF} className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 font-medium flex items-center justify-center gap-2"><Icon name="Printer" size={20} /> พิมพ์ใบรายงานผล</button>
-                  <button onClick={() => { setSubmitSuccess(false); setFormData({...formData, symptoms:[], stopBang:Array(8).fill(null), epworth:Array(8).fill(null)}); }} className="flex-1 bg-slate-100 text-slate-700 px-4 py-3 rounded-lg hover:bg-slate-200 font-medium border border-slate-200">กลับไปส่งข้อมูลใหม่</button>
+
+                <div className="pt-8 mt-6 flex flex-col gap-3">
+                  <button onClick={exportSummaryToPDF} className="w-full bg-[#0f172a] hover:bg-slate-800 text-amber-400 px-6 py-4 rounded-xl transition-all duration-300 font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-amber-500/20">
+                    <Icon name="Printer" size={20} /> พิมพ์ใบรายงานผลสำหรับแพทย์
+                  </button>
+                  <button onClick={() => { setSubmitSuccess(false); setFormData({
+                    patientName: '', phone: '', rights: '', hn: '', visitType: '', appointmentDate: '', weight: '', height: '', bmi: '',
+                    symptoms: [], medicalHistory: '', sleepTime: '', beverages: '',
+                    stopBang: Array(8).fill(null), epworth: Array(8).fill(null), contactRequested: ''
+                  }); }} className="w-full bg-white text-slate-600 px-6 py-4 rounded-xl hover:bg-slate-50 transition-colors font-medium border border-slate-200 shadow-sm hover:text-slate-900">
+                    ส่งข้อมูลผู้ป่วยรายอื่น
+                  </button>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden h-[600px]">
+              
+              {/* Inline AI Chat Panel */}
+              <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col overflow-hidden h-[600px] lg:h-auto">
                  <InlineChatbot stopBangTotal={stopBangTotal} epworthTotal={epworthTotal} formData={formData} />
               </div>
             </div>
@@ -406,94 +445,215 @@
       }
 
       return (
-        <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-xl overflow-hidden max-w-4xl mx-auto">
-          <div className="bg-blue-50 p-6 border-b border-blue-100">
-            <h2 className="text-2xl font-bold text-blue-900 flex items-center gap-2"><Icon name="FileText" className="text-blue-600"/> ใบส่งตรวจการนอนหลับ (Sleep Test)</h2>
+        <form onSubmit={handleSubmit} className="bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden border border-slate-100/80">
+          <div className="bg-gradient-to-r from-[#0f172a] to-slate-800 p-8 md:p-10 text-white relative overflow-hidden">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-amber-500 opacity-10 rounded-full blur-3xl"></div>
+            <h2 className="text-3xl font-bold flex items-center gap-3 tracking-tight relative z-10">
+              <div className="p-2 bg-amber-500/20 rounded-xl border border-amber-500/30 text-amber-400"><Icon name="FileText" size={28}/></div>
+              ส่งตรวจการนอนหลับ (Sleep Test)
+            </h2>
+            <p className="text-slate-300 mt-3 font-medium text-lg relative z-10">กรุณากรอกข้อมูลให้ครบถ้วน เพื่อการประเมินที่แม่นยำ</p>
           </div>
-          <div className="p-6 space-y-8">
+
+          <div className="p-6 md:p-10 space-y-10">
+            {/* Section 1: ข้อมูลผู้ป่วย */}
             <section>
-              <h3 className="text-lg font-semibold border-b pb-2 mb-4">ข้อมูลผู้ป่วย</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className="block text-sm mb-1">ชื่อ-นามสกุล</label><input required type="text" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, patientName: e.target.value})} /></div>
-                <div><label className="block text-sm mb-1">เบอร์โทรศัพท์</label><input required type="tel" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
-                <div><label className="block text-sm mb-1">HN</label><input type="text" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, hn: e.target.value})} /></div>
-                <div><label className="block text-sm mb-1">สิทธิการรักษา</label><select className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, rights: e.target.value})}><option value="">เลือกสิทธิ</option><option value="ข้าราชการเบิกจ่ายตรง">ข้าราชการ</option><option value="ประกันสังคม">ประกันสังคม</option><option value="สิทธิ30บาท สปสช">สปสช</option></select></div>
-                <div><label className="block text-sm mb-1">การตรวจครั้งนี้เป็นการ</label><div className="flex gap-4 mt-2"><label className="flex items-center gap-1"><input type="radio" name="visit" value="ครั้งแรก" onChange={e=>setFormData({...formData, visitType:e.target.value})}/> ครั้งแรก</label><label className="flex items-center gap-1"><input type="radio" name="visit" value="ครั้งที่..." onChange={e=>setFormData({...formData, visitType:e.target.value})}/> ติดตามอาการ</label></div></div>
-                <div><label className="block text-sm mb-1">วันที่นัดตรวจ</label><input type="date" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, appointmentDate: e.target.value})} /></div>
+              <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-amber-500 rounded-full shadow-sm"></div> ข้อมูลเบื้องต้น
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">ชื่อ-นามสกุล <span className="text-red-500">*</span></label><input required type="text" className="premium-input" placeholder="ระบุชื่อเต็ม" onChange={e => setFormData({...formData, patientName: e.target.value})} /></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">เบอร์โทรศัพท์ <span className="text-red-500">*</span></label><input required type="tel" className="premium-input" placeholder="08X-XXX-XXXX" onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">รหัสประจำตัวผู้ป่วย (HN)</label><input type="text" className="premium-input" placeholder="ตัวเลข 7 หลัก" onChange={e => setFormData({...formData, hn: e.target.value})} /></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5">สิทธิการรักษา</label>
+                  <select className="premium-input appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7%2010l5%205%205-5H7z%22%20fill%3D%22%2364748b%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_10px_center]" onChange={e => setFormData({...formData, rights: e.target.value})}>
+                    <option value="">-- กรุณาเลือกสิทธิ --</option>
+                    <option value="ข้าราชการเบิกจ่ายตรง">สวัสดิการข้าราชการ</option>
+                    <option value="ประกันสังคม">ประกันสังคม</option>
+                    <option value="สิทธิ30บาท สปสช">หลักประกันสุขภาพ (บัตรทอง)</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2 bg-slate-50/80 p-5 rounded-2xl border border-slate-100 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">ประเภทการเข้ารับบริการ</label>
+                    <div className="flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name="visit" value="ครั้งแรก" className="w-5 h-5 accent-amber-500" onChange={e=>setFormData({...formData, visitType:e.target.value})}/> <span className="group-hover:text-amber-600 transition-colors">ตรวจครั้งแรก</span></label>
+                      <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name="visit" value="ครั้งที่..." className="w-5 h-5 accent-amber-500" onChange={e=>setFormData({...formData, visitType:e.target.value})}/> <span className="group-hover:text-amber-600 transition-colors">ติดตามอาการ</span></label>
+                    </div>
+                  </div>
+                  <div className="w-full md:w-1/3">
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">วันที่นัดหมาย</label>
+                    <input type="date" className="premium-input" onChange={e => setFormData({...formData, appointmentDate: e.target.value})} />
+                  </div>
+                </div>
               </div>
             </section>
+
+            <div className="w-full h-px bg-slate-100"></div>
+
+            {/* Section 2: ประวัติและการตรวจร่างกาย */}
             <section>
-              <h3 className="text-lg font-semibold border-b pb-2 mb-4">ประวัติและการตรวจร่างกาย</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div><label className="block text-sm mb-1">น้ำหนัก (kg)</label><input type="number" step="0.1" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, weight: e.target.value})} /></div>
-                <div><label className="block text-sm mb-1">ส่วนสูง (cm)</label><input type="number" step="0.1" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, height: e.target.value})} /></div>
-                <div><label className="block text-sm mb-1">BMI</label><input type="text" readOnly className="w-full border rounded-md p-2 bg-slate-100" value={formData.bmi} placeholder="คำนวณอัตโนมัติ" /></div>
+              <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-amber-500 rounded-full shadow-sm"></div> ข้อมูลทางคลินิก
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">น้ำหนัก (kg)</label><input type="number" step="0.1" className="premium-input" placeholder="เช่น 65.5" onChange={e => setFormData({...formData, weight: e.target.value})} /></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">ส่วนสูง (cm)</label><input type="number" step="0.1" className="premium-input" placeholder="เช่น 170" onChange={e => setFormData({...formData, height: e.target.value})} /></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">ดัชนีมวลกาย (BMI)</label><input type="text" readOnly className="w-full border border-slate-200 bg-slate-100 rounded-xl p-3 text-slate-500 font-semibold cursor-not-allowed" value={formData.bmi} placeholder="คำนวณอัตโนมัติ" /></div>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm mb-2">อาการนำ (เลือกได้มากกว่า 1 ข้อ)</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                  {['กรน', 'ง่วงระหว่างวัน', 'ปวดศีรษะในตอนเช้า', 'หลับไม่สนิท', 'ขากระตุก', 'นอนไม่หลับ', 'ละเมอ', 'นอนกัดฟัน'].map(sym => (
-                    <label key={sym} className="flex items-center gap-2"><input type="checkbox" value={sym} onChange={e => handleCheckboxChange(e, 'symptoms')}/> {sym}</label>
+              
+              <div className="bg-slate-50/80 p-6 rounded-2xl border border-slate-100 mb-6">
+                <label className="block text-sm font-semibold text-slate-900 mb-4 tracking-wide">อาการที่พบ (สามารถเลือกได้มากกว่า 1 ข้อ)</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-slate-700">
+                  {['กรนเสียงดัง', 'ง่วงนอนระหว่างวัน', 'ปวดศีรษะตอนเช้า', 'หลับไม่สนิท', 'ขากระตุก/ตะคริว', 'นอนไม่หลับ', 'ละเมอ', 'นอนกัดฟัน'].map(sym => (
+                    <label key={sym} className="flex items-center gap-2 cursor-pointer group hover:bg-white p-2 rounded-lg transition-colors border border-transparent hover:border-slate-200 hover:shadow-sm">
+                      <input type="checkbox" value={sym.split(' ')[0]} className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 accent-amber-500" onChange={e => handleCheckboxChange(e, 'symptoms')}/> 
+                      <span className="font-medium group-hover:text-amber-700 transition-colors">{sym}</span>
+                    </label>
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label className="block text-sm mb-1">โรคประจำตัว</label><textarea className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, medicalHistory: e.target.value})}></textarea></div>
-                <div><label className="block text-sm mb-1">เวลาเข้านอน - ตื่น</label><input type="text" className="w-full border rounded-md p-2" onChange={e => setFormData({...formData, sleepTime: e.target.value})} /></div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2"><label className="block text-sm font-semibold text-slate-700 mb-1.5">โรคประจำตัว / ยาที่รับประทานประจำ</label><textarea className="premium-input resize-none h-24" placeholder="ระบุรายละเอียด (หากไม่มีให้เว้นว่าง)" onChange={e => setFormData({...formData, medicalHistory: e.target.value})}></textarea></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">เวลาเข้านอน - ตื่นนอน</label><input type="text" className="premium-input" placeholder="เช่น 22.00 - 06.00 น." onChange={e => setFormData({...formData, sleepTime: e.target.value})} /></div>
+                <div><label className="block text-sm font-semibold text-slate-700 mb-1.5">พฤติกรรมการดื่ม ชา/กาแฟ/แอลกอฮอล์</label><input type="text" className="premium-input" placeholder="ระบุชนิดและความถี่" onChange={e => setFormData({...formData, beverages: e.target.value})} /></div>
               </div>
             </section>
             
-            {/* STOP-BANG */}
-            <section className="bg-orange-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-semibold">แบบสอบถาม STOP-BANG</h3><span className="font-bold">คะแนน: {stopBangTotal}</span></div>
-              {stopBangQuestions.map((q, idx) => (
-                <div key={idx} className="flex sm:justify-between items-center py-2 border-b border-orange-100">
-                  <span className="text-sm">{idx+1}. {q}</span>
-                  <div className="flex gap-4"><label><input type="radio" name={`sb${idx}`} required onChange={() => {const a=[...formData.stopBang];a[idx]=1;setFormData({...formData,stopBang:a});}}/> ใช่</label><label><input type="radio" name={`sb${idx}`} required onChange={() => {const a=[...formData.stopBang];a[idx]=0;setFormData({...formData,stopBang:a});}}/> ไม่ใช่</label></div>
-                </div>
-              ))}
-            </section>
+            <div className="w-full h-px bg-slate-100"></div>
 
-            {/* Epworth */}
-            <section className="bg-indigo-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center mb-4"><h3 className="font-semibold">แบบสอบถาม Epworth</h3><span className="font-bold">คะแนน: {epworthTotal}</span></div>
-              {epworthQuestions.map((q, idx) => (
-                <div key={idx} className="flex sm:justify-between items-center py-2 border-b border-indigo-100">
-                  <span className="text-sm">{idx+1}. {q}</span>
-                  <div className="flex gap-3">{[0,1,2,3].map(s=>(<label key={s} className="flex flex-col items-center"><input type="radio" name={`ep${idx}`} required onChange={()=>{const a=[...formData.epworth];a[idx]=s;setFormData({...formData,epworth:a})}}/><span>{s}</span></label>))}</div>
+            {/* STOP-BANG Section */}
+            <section className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+              <div className="p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">แบบประเมิน STOP-BANG</h3>
+                    <p className="text-sm text-slate-500 mt-1">คัดกรองความเสี่ยงภาวะหยุดหายใจขณะหลับ (OSA)</p>
+                  </div>
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 font-bold text-lg text-slate-800 shadow-sm flex items-center gap-2">
+                    คะแนนรวม: <span className="text-red-600 text-2xl">{stopBangTotal}</span>
+                  </div>
                 </div>
-              ))}
-            </section>
-
-            <section className="bg-green-50 p-6 rounded-lg border border-green-100">
-              <h3 className="font-semibold mb-3">ต้องการให้เจ้าหน้าที่ติดต่อกลับนัดวันตรวจหรือไม่?</h3>
-              <div className="flex gap-6 mb-4">
-                <label><input type="radio" name="contact" value="ต้องการ" required onChange={e=>setFormData({...formData, contactRequested: e.target.value})}/> ต้องการ</label>
-                <label><input type="radio" name="contact" value="ไม่ต้องการ" required onChange={e=>setFormData({...formData, contactRequested: e.target.value})}/> ไม่ต้องการ</label>
+                
+                <div className="space-y-1">
+                  {stopBangQuestions.map((q, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 gap-4">
+                      <span className="text-[15px] font-medium text-slate-700 flex-1 pr-4"><span className="text-slate-400 mr-2">{idx+1}.</span> {q}</span>
+                      <div className="flex gap-4 sm:shrink-0 bg-white sm:bg-transparent p-2 sm:p-0 rounded-lg shadow-sm sm:shadow-none border sm:border-none border-slate-200">
+                        <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name={`sb${idx}`} required className="w-5 h-5 accent-red-500" onChange={() => {const a=[...formData.stopBang];a[idx]=1;setFormData({...formData,stopBang:a});}}/> <span className="font-semibold text-slate-600 group-hover:text-red-600">ใช่</span></label>
+                        <div className="w-px h-5 bg-slate-200 hidden sm:block"></div>
+                        <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name={`sb${idx}`} required className="w-5 h-5 accent-red-500" onChange={() => {const a=[...formData.stopBang];a[idx]=0;setFormData({...formData,stopBang:a});}}/> <span className="font-semibold text-slate-600 group-hover:text-red-600">ไม่ใช่</span></label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            </section>
+
+            {/* Epworth Section */}
+            <section className="bg-white border border-slate-200 shadow-sm rounded-3xl overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
+              <div className="p-6 md:p-8">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">แบบประเมิน Epworth Sleepiness Scale</h3>
+                    <p className="text-sm text-slate-500 mt-1">ประเมินความง่วงนอนผิดปกติในเวลากลางวัน (0=ไม่เคย, 3=ง่วงมาก)</p>
+                  </div>
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 font-bold text-lg text-slate-800 shadow-sm flex items-center gap-2">
+                    คะแนนรวม: <span className="text-orange-600 text-2xl">{epworthTotal}</span>
+                  </div>
+                </div>
+
+                <div className="hidden sm:flex justify-end gap-6 mb-2 pr-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="w-6 text-center">0</span><span className="w-6 text-center">1</span><span className="w-6 text-center">2</span><span className="w-6 text-center">3</span>
+                </div>
+
+                <div className="space-y-1">
+                  {epworthQuestions.map((q, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 gap-4">
+                      <span className="text-[15px] font-medium text-slate-700 flex-1 pr-4"><span className="text-slate-400 mr-2">{idx+1}.</span> {q}</span>
+                      <div className="flex justify-between sm:justify-end gap-6 sm:shrink-0 bg-white sm:bg-transparent p-3 sm:p-0 rounded-lg shadow-sm sm:shadow-none border sm:border-none border-slate-200 w-full sm:w-auto">
+                        {[0,1,2,3].map(s=>(
+                          <label key={s} className="flex flex-col items-center cursor-pointer group relative">
+                            <span className="sm:hidden text-xs font-bold text-slate-400 mb-2">{s}</span>
+                            <input type="radio" name={`ep${idx}`} required className="w-6 h-6 accent-orange-500" onChange={()=>{const a=[...formData.epworth];a[idx]=s;setFormData({...formData,epworth:a})}}/>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* นัดหมาย Section */}
+            <section className="bg-gradient-to-br from-slate-50 to-slate-100 p-8 rounded-3xl border border-slate-200 shadow-inner">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">บริการนัดหมายล่วงหน้า</h3>
+              <p className="text-sm text-slate-500 mb-6">ท่านต้องการให้เจ้าหน้าที่โรงพยาบาลติดต่อกลับเพื่อนัดวันตรวจการนอนหลับ (Polysomnography) หรือไม่?</p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <label className="flex-1 flex items-center gap-3 bg-white p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all group">
+                  <input type="radio" name="contact" value="ต้องการ" required className="w-6 h-6 accent-amber-500" onChange={e=>setFormData({...formData, contactRequested: e.target.value})}/> 
+                  <span className="font-bold text-slate-700 group-hover:text-amber-600">ต้องการให้ติดต่อกลับ</span>
+                </label>
+                <label className="flex-1 flex items-center gap-3 bg-white p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-slate-400 hover:shadow-md transition-all group">
+                  <input type="radio" name="contact" value="ไม่ต้องการ" required className="w-6 h-6 accent-slate-500" onChange={e=>setFormData({...formData, contactRequested: e.target.value})}/> 
+                  <span className="font-bold text-slate-700 group-hover:text-slate-900">ยังไม่ต้องการ (จะติดต่อเองทีหลัง)</span>
+                </label>
+              </div>
+
               {formData.contactRequested === 'ต้องการ' && (
-                <div className="mt-4"><input type="tel" className="w-full md:w-1/2 border p-2 mb-4" placeholder="เบอร์โทร" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})}/></div>
+                <div className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm animate-in slide-in-from-top-4 duration-300 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">เบอร์โทรศัพท์มือถือที่ติดต่อได้สะดวก <span className="text-red-500">*</span></label>
+                  <input type="tel" className="premium-input md:w-1/2 mb-6" placeholder="08X-XXX-XXXX" value={formData.phone} onChange={e=>setFormData({...formData, phone:e.target.value})}/>
+                  
+                  <div className="pt-5 border-t border-slate-100">
+                    <p className="text-sm text-slate-500 mb-3 flex items-center gap-2"><Icon name="Activity" size={16} className="text-emerald-500"/> หรือแอด LINE เพื่อพูดคุยกับเจ้าหน้าที่โดยตรง</p>
+                    <a href="https://line.me/R/ti/p/@871ykqyc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#00B900] hover:bg-[#009900] text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm hover:shadow-md">
+                      <Icon name="MessageCircle" size={20} /> แอดไลน์คลินิก @871ykqyc
+                    </a>
+                  </div>
+                </div>
               )}
             </section>
 
-            <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">{isSubmitting ? 'กำลังบันทึก...' : 'ส่งข้อมูลประเมิน'}</button>
+            <div className="pt-4 pb-2">
+              <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-[#0f172a] to-slate-800 hover:from-slate-800 hover:to-slate-900 text-amber-400 text-lg font-bold py-5 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:hover:translate-y-0 disabled:shadow-none flex justify-center items-center gap-3 border border-amber-500/20">
+                {isSubmitting ? (
+                  <><span className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></span> กำลังบันทึกข้อมูลและวิเคราะห์ผล...</>
+                ) : (
+                  <>บันทึกและประเมินผล <Icon name="ChevronRight" size={20}/></>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       );
     }
 
     // ==========================================
-    // Admin Sections
+    // Admin Sections (Premium Look)
     // ==========================================
     function AdminLogin({ onLogin }) {
       const [u, setU] = useState(''); const [p, setP] = useState('');
-      const submit = e => { e.preventDefault(); if(u==='admin'&&p==='1234') onLogin(); else alert('รหัสผิด'); };
+      const submit = e => { e.preventDefault(); if(u==='admin'&&p==='1234') onLogin(); else alert('Invalid Credentials'); };
       return (
-        <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl"><h2 className="text-center font-bold mb-6">สำหรับเจ้าหน้าที่</h2><form onSubmit={submit} className="space-y-4">
-          <input type="text" placeholder="Username" className="w-full border p-2" value={u} onChange={e=>setU(e.target.value)}/>
-          <input type="password" placeholder="Password" className="w-full border p-2" value={p} onChange={e=>setP(e.target.value)}/>
-          <button type="submit" className="w-full bg-slate-800 text-white py-2 rounded">เข้าสู่ระบบ</button>
-        </form></div>
+        <div className="max-w-md mx-auto mt-20 bg-white p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+          <div className="w-20 h-20 bg-[#0f172a] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg rotate-3 border border-amber-500/30">
+            <Icon name="User" size={32} className="text-amber-400 -rotate-3" />
+          </div>
+          <h2 className="text-2xl text-center font-bold mb-2 text-slate-900">เจ้าหน้าที่คลินิก</h2>
+          <p className="text-center text-slate-500 mb-8 text-sm">เข้าสู่ระบบเพื่อจัดการข้อมูลการส่งตรวจ</p>
+          <form onSubmit={submit} className="space-y-5">
+            <div><label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ชื่อผู้ใช้</label><input type="text" className="premium-input" value={u} onChange={e=>setU(e.target.value)}/></div>
+            <div><label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">รหัสผ่าน</label><input type="password" className="premium-input" value={p} onChange={e=>setP(e.target.value)}/></div>
+            <button type="submit" className="w-full bg-[#0f172a] hover:bg-slate-800 text-amber-400 font-bold py-3.5 rounded-xl transition-all shadow-md mt-4 border border-amber-500/20">เข้าสู่ระบบ</button>
+          </form>
+        </div>
       );
     }
 
@@ -516,36 +676,90 @@
         link.click();
       };
 
+      const hRisk = patients.filter(p => p.stopBangScore >= 3).length;
+
       return (
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-2xl font-bold mb-4">ข้อมูลผู้ป่วย</h2>
-          <table className="w-full text-left border"><thead><tr className="bg-slate-50"><th className="p-2 border">วันที่</th><th className="p-2 border">ชื่อ</th><th className="p-2 border">STOP-BANG</th><th className="p-2 border">Epworth</th><th className="p-2 border">โหลด</th></tr></thead>
-          <tbody>{patients.map(p=>(<tr key={p.id}><td className="p-2 border">{new Date(p.createdAt).toLocaleDateString('th-TH')}</td><td className="p-2 border">{p.patientName}</td><td className="p-2 border text-center">{p.stopBangScore}</td><td className="p-2 border text-center">{p.epworthScore}</td><td className="p-2 border text-center"><button onClick={()=>exportDoc(p)} className="text-blue-600"><Icon name="Download" size={20}/></button></td></tr>))}</tbody></table>
+        <div className="space-y-8 animate-in fade-in">
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">แดชบอร์ดจัดการข้อมูล</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+              <div className="p-4 bg-[#0f172a] text-amber-400 rounded-xl shadow-md border border-amber-500/20"><Icon name="User" size={28}/></div>
+              <div><p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">เคสทั้งหมด</p><p className="text-3xl font-bold text-slate-900">{patients.length}</p></div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+              <div className="p-4 bg-red-50 text-red-600 rounded-xl shadow-sm border border-red-100"><Icon name="Activity" size={28}/></div>
+              <div><p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">ความเสี่ยงสูง</p><p className="text-3xl font-bold text-red-600">{hRisk}</p></div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead><tr className="bg-slate-50/80 border-b border-slate-100"><th className="p-5 font-bold text-slate-600">วันที่ / ผู้ป่วย</th><th className="p-5 font-bold text-slate-600 text-center">STOP-BANG</th><th className="p-5 font-bold text-slate-600 text-center">Epworth</th><th className="p-5 font-bold text-slate-600 text-right">ส่งออกรายงาน</th></tr></thead>
+                <tbody className="divide-y divide-slate-100">
+                  {patients.length === 0 ? <tr><td colSpan="4" className="p-10 text-center text-slate-400 font-medium">ยังไม่มีข้อมูลผู้ป่วยในระบบ</td></tr> : 
+                  patients.map(p=>(
+                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="p-5"><div className="font-bold text-slate-900">{p.patientName}</div><div className="text-sm text-slate-500">{new Date(p.createdAt).toLocaleDateString('th-TH')} • HN: {p.hn||'-'}</div></td>
+                      <td className="p-5 text-center"><span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${p.stopBangScore>=3?'bg-red-100 text-red-700':'bg-emerald-100 text-emerald-700'}`}>{p.stopBangScore}</span></td>
+                      <td className="p-5 text-center"><span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${p.epworthScore>10?'bg-orange-100 text-orange-700':'bg-emerald-100 text-emerald-700'}`}>{p.epworthScore}</span></td>
+                      <td className="p-5 text-right"><button onClick={()=>exportDoc(p)} className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border border-slate-200"><Icon name="Download" size={16}/> Word (.doc)</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       );
     }
 
     // ==========================================
-    // Chatbots
+    // Chatbots (Premium Floating & Inline)
     // ==========================================
     function Chatbot({ formData }) {
       const [open, setOpen] = useState(false); const [input, setInput] = useState('');
-      const [msgs, setMsgs] = useState([{role:'model', text:'มีอะไรให้ AI ช่วยแนะนำไหมครับ?'}]);
+      const [msgs, setMsgs] = useState([{role:'model', text:'สวัสดีครับ ผมคือ AI ผู้ช่วยแพทย์เฉพาะทาง มีข้อสงสัยเกี่ยวกับการนอนกรน หรือภาวะหยุดหายใจขณะหลับ ปรึกษาผมได้เลยครับ'}]);
+      const [isTyping, setIsTyping] = useState(false); const endRef = useRef(null);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, isTyping]);
+
+      // ฝัง API Key ตามที่คุณระบุไว้
+      const apiKey = "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA";
+
       const send = async e => {
         e.preventDefault(); if(!input) return;
-        const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput('');
+        const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput(''); setIsTyping(true);
         try {
-          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`ตอบสั้นๆ เรื่อง Sleep apnea ${formData?.patientName?`ของผู้ป่วย ${formData.patientName}`:''}`}]}}, "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA");
-          setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"Error"}]);
-        } catch(e) { setMsgs(p=>[...p, {role:'model',text:'Error AI'}]); }
+          const payload = {
+            contents: [{ parts: [{ text: uTxt }] }],
+            systemInstruction: { parts: [{ text: `ตอบแบบแพทย์ผู้เชี่ยวชาญ สุภาพ ให้ความรู้เรื่อง Sleep apnea ข้อมูลผู้ป่วย: ${formData?.patientName || 'ไม่ระบุ'}` }] }
+          };
+          const res = await fetchGeminiWithBackoff(payload, apiKey);
+          setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"เกิดข้อผิดพลาดในการเชื่อมต่อ"}]);
+        } catch(e) { 
+          console.error(e);
+          setMsgs(p=>[...p, {role:'model',text:'ขออภัย ระบบไม่สามารถเชื่อมต่อได้ในขณะนี้ กรุณาตรวจสอบความถูกต้องของ API Key'}]); 
+        }
+        setIsTyping(false);
       };
       return (
-        <div className="fixed bottom-4 right-4 z-50">
-          {!open && <button onClick={()=>setOpen(true)} className="bg-blue-600 text-white p-4 rounded-full shadow-lg"><Icon name="MessageCircle" /></button>}
-          {open && <div className="bg-white w-80 h-96 flex flex-col shadow-xl border rounded-xl">
-            <div className="bg-blue-600 text-white p-3 flex justify-between"><span className="font-bold">AI Expert</span><button onClick={()=>setOpen(false)}><Icon name="X" size={20}/></button></div>
-            <div className="flex-1 overflow-auto p-3 space-y-2">{msgs.map((m,i)=><div key={i} className={`p-2 rounded max-w-[80%] ${m.role==='user'?'bg-blue-600 text-white self-end ml-auto':'bg-slate-100 text-black'}`}>{m.text}</div>)}</div>
-            <form onSubmit={send} className="p-2 border-t flex"><input className="flex-1 border p-2 rounded" value={input} onChange={e=>setInput(e.target.value)}/><button className="bg-blue-600 text-white p-2 rounded ml-2"><Icon name="Send" size={20}/></button></form>
+        <div className="fixed bottom-6 right-6 z-50">
+          {!open && <button onClick={()=>setOpen(true)} className="bg-[#0f172a] text-amber-400 p-4 rounded-full shadow-[0_10px_40px_rgba(245,158,11,0.25)] hover:shadow-[0_10px_50px_rgba(245,158,11,0.4)] border border-amber-500/30 transition-all hover:-translate-y-1"><Icon name="MessageCircle" size={28} /></button>}
+          {open && <div className="bg-white w-[350px] h-[500px] flex flex-col shadow-2xl border border-slate-200 rounded-3xl overflow-hidden animate-in slide-in-from-bottom-4">
+            <div className="bg-[#0f172a] text-white p-4 flex justify-between items-center border-b border-amber-500/20">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div><span className="font-bold tracking-wide">AI Sleep Expert</span></div>
+              <button onClick={()=>setOpen(false)} className="text-slate-400 hover:text-white transition-colors"><Icon name="X" size={20}/></button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 space-y-3 bg-slate-50 custom-scrollbar">
+              {msgs.map((m,i)=><div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={`px-4 py-2.5 rounded-2xl max-w-[85%] text-[15px] leading-relaxed shadow-sm ${m.role==='user'?'bg-[#0f172a] text-white rounded-br-sm':'bg-white text-slate-800 border border-slate-100 rounded-bl-sm'}`}>{m.text}</div></div>)}
+              {isTyping && <div className="flex"><div className="bg-white border border-slate-100 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm flex gap-1.5"><div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce delay-75"></div><div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce delay-150"></div></div></div>}
+              <div ref={endRef}/>
+            </div>
+            <form onSubmit={send} className="p-3 bg-white border-t border-slate-100 flex gap-2">
+              <input className="flex-1 border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all" placeholder="พิมพ์ข้อความที่นี่..." value={input} onChange={e=>setInput(e.target.value)}/>
+              <button disabled={isTyping} className="bg-[#0f172a] text-amber-400 p-2.5 rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50"><Icon name="Send" size={20}/></button>
+            </form>
           </div>}
         </div>
       );
@@ -553,27 +767,48 @@
 
     function InlineChatbot({ stopBangTotal, epworthTotal, formData }) {
       const [input, setInput] = useState('');
-      const [msgs, setMsgs] = useState([{role:'model', text:`คะแนน STOP-BANG: ${stopBangTotal}/8, Epworth: ${epworthTotal}/24 หากมีข้อสงสัยพิมพ์ถามได้เลยครับ`}]);
+      const [msgs, setMsgs] = useState([{role:'model', text:`ข้อมูลถูกประเมินแล้วครับ (STOP-BANG: ${stopBangTotal}/8, Epworth: ${epworthTotal}/24) หากคุณกังวลเกี่ยวกับผลคะแนน หรือต้องการทราบขั้นตอนการตรวจ Sleep Test อย่างละเอียด สามารถสอบถามผมได้เลยครับ`}]);
+      const [isTyping, setIsTyping] = useState(false); const endRef = useRef(null);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, isTyping]);
+
+      // ฝัง API Key ตามที่คุณระบุไว้
+      const apiKey = "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA";
+
       const send = async e => {
         e.preventDefault(); if(!input) return;
-        const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput('');
+        const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput(''); setIsTyping(true);
         try {
-          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`วิเคราะห์ OSA ตามคะแนน SB:${stopBangTotal}, Ep:${epworthTotal} ของ ${formData?.patientName}`}]}}, "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA");
-          setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"Error"}]);
-        } catch(e) { setMsgs(p=>[...p, {role:'model',text:'Error AI'}]); }
+          const payload = {
+            contents: [{ parts: [{ text: uTxt }] }],
+            systemInstruction: { parts: [{ text: `วิเคราะห์ OSA ตามคะแนน SB:${stopBangTotal}, Ep:${epworthTotal} ของผู้ป่วยชื่อ ${formData?.patientName || 'ไม่ระบุ'}` }] }
+          };
+          const res = await fetchGeminiWithBackoff(payload, apiKey);
+          setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"ระบบขัดข้อง"}]);
+        } catch(e) { 
+          console.error(e);
+          setMsgs(p=>[...p, {role:'model',text:'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบความถูกต้องของ API Key'}]); 
+        }
+        setIsTyping(false);
       };
       return (
-        <div className="flex flex-col h-full bg-slate-50">
-          <div className="bg-blue-600 text-white p-4 font-bold">ปรึกษาสุขภาพการนอนหลับ</div>
-          <div className="flex-1 overflow-auto p-4 space-y-4">{msgs.map((m,i)=><div key={i} className={`p-3 rounded-xl max-w-[85%] ${m.role==='user'?'bg-blue-600 text-white ml-auto':'bg-white border text-black'}`}>{m.text}</div>)}</div>
-          <form onSubmit={send} className="p-3 border-t bg-white flex"><input className="flex-1 border rounded-full px-4" value={input} onChange={e=>setInput(e.target.value)}/><button className="bg-blue-600 text-white p-2 rounded-full ml-2"><Icon name="Send" size={20}/></button></form>
+        <div className="flex flex-col h-full bg-slate-50 relative">
+          <div className="bg-[#0f172a] text-white p-5 border-b border-amber-500/20">
+             <div className="font-bold text-lg text-amber-400 flex items-center gap-2"><Icon name="MessageCircle" size={20}/> ปรึกษาผลประเมินกับ AI</div>
+             <div className="text-sm text-slate-400 mt-0.5">ผู้เชี่ยวชาญด้านเวชศาสตร์การนอนหลับ 24 ชม.</div>
+          </div>
+          <div className="flex-1 overflow-auto p-5 space-y-4 custom-scrollbar">
+            {msgs.map((m,i)=><div key={i} className={`flex ${m.role==='user'?'justify-end':'justify-start'}`}><div className={`px-5 py-3.5 rounded-2xl max-w-[85%] text-[15px] leading-relaxed shadow-sm ${m.role==='user'?'bg-[#0f172a] text-white rounded-br-sm':'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'}`}>{m.text}</div></div>)}
+            {isTyping && <div className="flex"><div className="bg-white border border-slate-100 px-5 py-4 rounded-2xl rounded-bl-sm shadow-sm flex gap-1.5"><div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce"></div><div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-75"></div><div className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-150"></div></div></div>}
+            <div ref={endRef}/>
+          </div>
+          <form onSubmit={send} className="p-4 bg-white border-t border-slate-100 flex gap-3">
+            <input className="flex-1 border border-slate-200 bg-slate-50 focus:bg-white rounded-xl px-5 py-3 text-[15px] outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-inner" placeholder="พิมพ์คำถามของคุณที่นี่..." value={input} onChange={e=>setInput(e.target.value)}/>
+            <button disabled={isTyping} className="bg-[#0f172a] hover:bg-slate-800 text-amber-400 px-5 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50"><Icon name="Send" size={22}/></button>
+          </form>
         </div>
       );
     }
 
-    // ==========================================
-    // Render
-    // ==========================================
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
