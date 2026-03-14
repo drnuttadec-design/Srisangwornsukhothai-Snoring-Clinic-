@@ -535,7 +535,7 @@
         e.preventDefault(); if(!input) return;
         const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput('');
         try {
-          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`ตอบสั้นๆ เรื่อง Sleep apnea ${formData?.patientName?`ของผู้ป่วย ${formData.patientName}`:''}`}]}}, "");
+          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`ตอบสั้นๆ เรื่อง Sleep apnea ${formData?.patientName?`ของผู้ป่วย ${formData.patientName}`:''}`}]}}, "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA");
           setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"Error"}]);
         } catch(e) { setMsgs(p=>[...p, {role:'model',text:'Error AI'}]); }
       };
@@ -558,7 +558,7 @@
         e.preventDefault(); if(!input) return;
         const uTxt = input; setMsgs(p=>[...p, {role:'user',text:uTxt}]); setInput('');
         try {
-          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`วิเคราะห์ OSA ตามคะแนน SB:${stopBangTotal}, Ep:${epworthTotal} ของ ${formData?.patientName}`}]}}, "");
+          const res = await fetchGeminiWithBackoff({contents:[{parts:[{text:uTxt}]}], systemInstruction:{parts:[{text:`วิเคราะห์ OSA ตามคะแนน SB:${stopBangTotal}, Ep:${epworthTotal} ของ ${formData?.patientName}`}]}}, "AIzaSyAERuyavwh0bLLYLS-DbRXHu82xBKLO-LA");
           setMsgs(p=>[...p, {role:'model', text:res?.candidates?.[0]?.content?.parts?.[0]?.text||"Error"}]);
         } catch(e) { setMsgs(p=>[...p, {role:'model',text:'Error AI'}]); }
       };
